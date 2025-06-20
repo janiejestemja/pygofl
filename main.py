@@ -82,6 +82,8 @@ def main():
                                 btn.next_state = False
                             elif alive_neighbors > 3:
                                 btn.next_state = False
+                            else:
+                                btn.next_state = True
                         else:
                             if alive_neighbors == 3:
                                 btn.next_state = True

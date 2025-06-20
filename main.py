@@ -1,14 +1,15 @@
 import sys
 import pygame 
-from PIL import Image, ImageDraw, ImageFont
 
 # Defintion of colors 
 black = (0, 0, 0)
 white = (255, 255, 255)
 
 # Setting screen bounds
-width = 660
+width = 990
 height = 660
+board_width = 30
+board_heigth = 20
 
 def get_alive_neighbors(pos, btns):
     x, y = pos    
@@ -22,9 +23,9 @@ def get_alive_neighbors(pos, btns):
     for flower in neighbors:
         i, j = flower
 
-        if i < 0 or i >= 10:
+        if i < 0 or i >= board_width:
             continue
-        if j < 0 or j >= 10:
+        if j < 0 or j >= board_heigth:
             continue
 
         living.append(btns[i][j].state)
@@ -42,13 +43,13 @@ def main():
     duration = 3
     frames = duration * fps
 
-    btn_img = make_surface((64, 64), (20, 20, 20))
+    btn_img = make_surface((32, 32), (20, 20, 20))
 
     btns = []
-    for i in range(10):
+    for i in range(board_width):
         row = []
-        for j in range(10):
-            btn = Btn(i * 66 , j * 66, btn_img)
+        for j in range(board_heigth):
+            btn = Btn(i * 33 , j * 33, btn_img)
             row.append(btn)
         btns.append(row)
 
@@ -78,15 +79,20 @@ def main():
                         # Check living
                         if btn.state:
                             if alive_neighbors < 2:
-                                btn.state = False
-                                btn.image.fill((20, 20, 20))
+                                btn.next_state = False
                             elif alive_neighbors > 3:
-                                btn.state = False
-                                btn.image.fill((20, 20, 20))
+                                btn.next_state = False
                         else:
                             if alive_neighbors == 3:
-                                btn.state = True
-                                btn.image.fill((200, 200, 200))
+                                btn.next_state = True
+
+                for row in btns:
+                    for btn in row:
+                        btn.state = btn.next_state
+                        if btn.state:
+                            btn.image.fill((200, 200, 200))
+                        else:
+                            btn.image.fill((20, 20, 20))
                         btn.draw(screen)
 
         # Keep track of time
@@ -130,6 +136,7 @@ class Btn():
 
         self.clicked = False
         self.state = False
+        self.next_state = False
 
     def draw(self, surface):
         action = False

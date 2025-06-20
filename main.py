@@ -1,36 +1,21 @@
+from utils import *
 import sys
-import pygame 
 
 # Defintion of colors 
 black = (0, 0, 0)
 white = (255, 255, 255)
 
+color_alive = (200, 200, 200)
+color_dead = (20, 20, 20)
+
+# Setting board bounds
+board_width = 50
+board_heigth = 30
+cell_size = 32
+
 # Setting screen bounds
-width = 990
-height = 660
-board_width = 30
-board_heigth = 20
-
-def get_alive_neighbors(pos, btns):
-    x, y = pos    
-    x_range = [i for i in range(x - 1, x + 2)]
-    y_range = [j for j in range(y - 1, y + 2)]
-
-    grid = [[(i, j) for j in y_range if (i, j) != (x, y)] for i in x_range]
-    neighbors = [ele for row in grid for ele in row]
-
-    living = []
-    for flower in neighbors:
-        i, j = flower
-
-        if i < 0 or i >= board_width:
-            continue
-        if j < 0 or j >= board_heigth:
-            continue
-
-        living.append(btns[i][j].state)
-
-    return sum(living)
+width = board_width * (cell_size + 1)
+height = board_heigth * (cell_size + 1)
 
 def main():
     # Init screen
@@ -41,22 +26,21 @@ def main():
     clock = pygame.time.Clock()
     fps = 60
     duration = 3
-    frames = duration * fps
 
-    btn_img = make_surface((32, 32), (20, 20, 20))
+    btn_img = make_surface((cell_size, cell_size), color_dead)
 
     btns = []
     for i in range(board_width):
         row = []
         for j in range(board_heigth):
-            btn = Btn(i * 33 , j * 33, btn_img)
+            btn = Btn(i * (cell_size + 1) , j * (cell_size + 1), btn_img)
             row.append(btn)
         btns.append(row)
 
     # Starting animation loop
     frame = 0
     PAUSED = True
-    while frame <= frames:
+    while True:
 
         if PAUSED:
 
@@ -65,16 +49,18 @@ def main():
                     if btn.draw(screen):
                         if btn.state:
                             btn.state = False
-                            btn.image.fill((20, 20, 20))
+                            btn.next_state = False
+                            btn.image.fill(color_dead)
                         else:
                             btn.state = True
-                            btn.image.fill((200, 200, 200))
+                            btn.next_state = True
+                            btn.image.fill(color_alive)
         else:
             if frame == 0:
                 for i, row in enumerate(btns):
                     for j, btn in enumerate(row):
                         # Get alive neighbors
-                        alive_neighbors = get_alive_neighbors((i, j), btns)
+                        alive_neighbors = get_alive_neighbors((i, j), btns, board_width, board_heigth)
 
                         # Check living
                         if btn.state:
@@ -92,15 +78,15 @@ def main():
                     for btn in row:
                         btn.state = btn.next_state
                         if btn.state:
-                            btn.image.fill((200, 200, 200))
+                            btn.image.fill(color_alive)
                         else:
-                            btn.image.fill((20, 20, 20))
+                            btn.image.fill(color_dead)
                         btn.draw(screen)
 
         # Keep track of time
         clock.tick(fps)
         frame += 1            
-        if frame > frames:
+        if frame > fps // 4:
             frame = 0
 
         # Updating animation by flipping the screen
@@ -113,6 +99,17 @@ def main():
                 pygame.quit()
                 sys.exit()
 
+            # Reset board
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                if PAUSED:
+                    for row in btns:
+                        for btn in row:
+                            btn.state = False
+                            btn.next_state = False
+                            btn.image.fill(color_dead)
+                else:
+                    pass
+
             # Pause the game
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 if PAUSED:
@@ -121,43 +118,6 @@ def main():
                 else:
                     PAUSED = True
                     print("Game paused...")
-
-def make_surface(size, colour):
-    surface  = pygame.Surface(size).convert()
-    surface.fill(colour)
-    return surface
-
-class Btn():
-    def __init__(self, x, y, image, scale=1):
-        width = image.get_width()
-        height = image.get_height()
-
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
-
-        self.clicked = False
-        self.state = False
-        self.next_state = False
-
-    def draw(self, surface):
-        action = False
-        # Get mouse position
-        pos = pygame.mouse.get_pos()
-
-        # Check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = True
-
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-
-        # Draw button on screen
-        surface.blit(self.image, (self.rect.x, self.rect.y))
-
-        return action
 
 if __name__ == "__main__":
     main()

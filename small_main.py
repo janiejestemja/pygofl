@@ -2,13 +2,13 @@ import sys
 import pygame
 
 bmargin = 32
-screen_width = 1280 # 1024 # 1280
-screen_height = 640 + bmargin # 512 + bmargin # 640
+screen_width = 1024 
+screen_height = 512 + bmargin 
 
 cell_size = (7, 7)
 
-board_width = 127  + 32
-board_height = 63  + 16
+board_width = 127
+board_height = 63
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -256,13 +256,13 @@ def main():
                     elif event.key == pygame.K_s:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
-                                if j == 0 and i % 6 == 4:
+                                if j == 0 and i % 6 == 3:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == 1 and i % 6 == 5:
+                                if j == 1 and i % 6 == 4:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == 2 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
+                                if j == 2 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 
@@ -270,13 +270,13 @@ def main():
                     elif event.key == pygame.K_a:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
-                                if j == 0 and i % 6 == 4:
+                                if j == 0 and i % 6 == 3:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == 1 and i % 6 == 3:
+                                if j == 1 and i % 6 == 2:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == 2 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
+                                if j == 2 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 
@@ -284,13 +284,13 @@ def main():
                     elif event.key == pygame.K_x:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
-                                if j == board_height - 1 and i % 6 == 4:
+                                if j == board_height - 1 and i % 6 == 3:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == board_height - 2 and i % 6 == 5:
+                                if j == board_height - 2 and i % 6 == 4:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == board_height - 3 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
+                                if j == board_height - 3 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 
@@ -298,13 +298,13 @@ def main():
                     elif event.key == pygame.K_y:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
-                                if j == board_height - 1 and i % 6 == 4:
+                                if j == board_height - 1 and i % 6 == 3:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == board_height - 2 and i % 6 == 3:
+                                if j == board_height - 2 and i % 6 == 2:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
-                                if j == board_height - 3 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
+                                if j == board_height - 3 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 

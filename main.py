@@ -45,6 +45,9 @@ class Btn():
             if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 self.clicked = True
                 action = True
+            elif pygame.mouse.get_pressed()[2] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
 
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
@@ -136,11 +139,18 @@ def main():
                     for j, btn in enumerate(row):
                         if btn.draw(screen):
                             if btn.state == True:
-                                btn.set_states(False)
-                                btn.image.fill(color_stilldead)
+                                if pygame.mouse.get_pressed()[0]:
+                                    pass
+                                else:
+                                    btn.set_states(False)
+                                    btn.image.fill(color_stilldead)
                             else:
-                                btn.set_states(True)
-                                btn.image.fill(color_stillalive)
+                                if pygame.mouse.get_pressed()[2]:
+                                    btn.set_states(False)
+                                    btn.image.fill(color_stilldead)
+                                else:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
             case "running":
                 for i, row in enumerate(btns):
                     for j, btn in enumerate(row):

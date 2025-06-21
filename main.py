@@ -1,69 +1,149 @@
-from utils import *
 import sys
+import pygame
 
-# Defintion of colors 
+screen_width = 1024 # 1280
+screen_height = 512 + 32 # 768
+
+cell_size = (7, 7)
+
+board_width = 127
+board_height = 63
+
 black = (0, 0, 0)
 white = (255, 255, 255)
 
-color_alive = (20, 200, 200)
-color_stillalive = (120, 100, 160)
-color_dead = (32, 64, 128)
-color_stilldead = (20, 20, 20)
+color_awoken = (10, 10, 220)
+color_stillalive = (40, 160, 80)
 
-# Setting board bounds
-board_width = 128 + 32 + 32 + 1
-board_heigth = 64 + 16 + 16 + 1
-cell_size = 8
+color_dead = (30, 30, 30)
+color_stilldead = (0, 0, 0)
 
-# Setting screen bounds
-width = board_width * (cell_size + 1)
-height = board_heigth * (cell_size + 1)
+bg_grid = (20, 20, 20)
+bg_nav = (10, 10, 10)
 
+# Basic Button
+class Btn():
+    def __init__(self, x, y, image, scale=1):
+        width = image.get_width()
+        height = image.get_height()
 
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+
+        self.clicked = False
+
+    def draw(self, surface):
+        action = False
+        # Get mouse position
+        pos = pygame.mouse.get_pos()
+
+        # Check mouseover and clicked conditions
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        # Draw button on screen
+        surface.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
+
+class CellBtn(Btn):
+    def __init__(self, x, y, image, scale=1):
+        super().__init__(x, y, image, scale)
+
+        self.past_state = False
+        self.state = False
+        self.next_state = False
+
+    def set_states(self, new_state):
+        self.past_state = new_state
+        self.state = new_state
+        self.next_state = new_state
+
+    @staticmethod
+    def get_alive_neighbors(indices, btns, board_width, board_height):
+        x, y = indices
+        x_range = [i for i in range(x - 1, x + 2)]
+        y_range = [j for j in range(y - 1, y + 2)]
+
+        grid = [[(i, j) for j in y_range if (i, j) != (x, y)] for i in x_range]
+        neighbors = [ele for row in grid for ele in row]
+
+        living = []
+        for flower in neighbors:
+            i, j = flower
+
+            if i < 0 or i >= board_width:
+                continue
+            if j < 0 or j >= board_height:
+                continue
+
+            living.append(btns[i][j].state)
+
+        return sum(living)
+
+    @staticmethod
+    def make_surface(size, color):
+        surface  = pygame.Surface(size)
+        surface.fill(color)
+        return surface
+
+def draw_text(screen, text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 def main():
+    pygame.init()
     # Init screen
-    screen = pygame.display.set_mode((width, height))
-    screen.fill(black)
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption("PyGame of Life")
+    screen.fill(bg_grid)
 
-    # Setting framerates and durations
+    # Init font for draw_text()
+    text_font = pygame.font.SysFont("Helvetica", 12)
+
+    # Setting framerates 
     clock = pygame.time.Clock()
     fps = 60
 
-    btn_img = make_surface((cell_size, cell_size), color_stilldead)
-
+    # Creating Cells
+    btn_img = CellBtn.make_surface(cell_size, color_stilldead)
     btns = []
     for i in range(board_width):
         row = []
-        for j in range(board_heigth):
-            btn = Btn(i * (cell_size + 1) , j * (cell_size + 1), btn_img)
+        for j in range(board_height):
+            btn = CellBtn(4 + i * (cell_size[0] + 1) , 4 + j * (cell_size[1] + 1), btn_img)
             row.append(btn)
         btns.append(row)
 
     # Starting animation loop
     frame = 0
-    PAUSED = True
+    game_state = "paused" # "running"
     while True:
+        # Navbar at the bottom
+        pygame.draw.rect(screen, bg_nav, (0, 513, screen_width, screen_height))
 
-        if PAUSED:
-
-            for i, row in enumerate(btns):
-                for j, btn in enumerate(row):
-                    if btn.draw(screen):
-                        if btn.state:
-                            btn.state = False
-                            btn.next_state = False
-                            btn.image.fill(color_dead)
-                        else:
-                            btn.state = True
-                            btn.next_state = True
-                            btn.image.fill(color_alive)
-        else:
-            if frame == 0:
+        match game_state:
+            case "paused":
+                for i, row in enumerate(btns):
+                    for j, btn in enumerate(row):
+                        if btn.draw(screen):
+                            if btn.state == True:
+                                btn.set_states(False)
+                                btn.image.fill(color_stilldead)
+                            else:
+                                btn.set_states(True)
+                                btn.image.fill(color_stillalive)
+            case "running":
                 for i, row in enumerate(btns):
                     for j, btn in enumerate(row):
                         # Get alive neighbors
-                        alive_neighbors = get_alive_neighbors((i, j), btns, board_width, board_heigth)
+                        alive_neighbors = CellBtn.get_alive_neighbors((i, j), btns, board_width, board_height)
 
                         # Check living
                         if btn.state:
@@ -73,6 +153,8 @@ def main():
                                 btn.next_state = False
                             else:
                                 btn.next_state = True
+
+                        # Check dead
                         else:
                             if alive_neighbors == 3:
                                 btn.next_state = True
@@ -80,33 +162,35 @@ def main():
                 # Setting old state to new one
                 for row in btns:
                     for btn in row:
-
-                        old_state = btn.state 
+                        btn.past_state = btn.state
                         btn.state = btn.next_state
 
+                        # Coloring alive
                         if btn.state:
-                            # Still alive
-                            if btn.state == old_state:
-                                btn.image.fill((120, 80, 160))
-
-                            # Newly alive
+                            if btn.past_state == btn.state:
+                                btn.image.fill(color_stillalive)
                             else:
-                                btn.image.fill(color_alive)
+                                btn.image.fill(color_awoken)
 
+                        # Coloring dead
                         else:
-                            # Still dead
-                            if btn.state == old_state:
-                                btn.image.fill((20, 20, 20))
-                            # Just died
+                            if btn.past_state == btn.state:
+                                btn.image.fill(color_stilldead)
                             else:
                                 btn.image.fill(color_dead)
+
                         btn.draw(screen)
 
         # Keep track of time
         clock.tick(fps)
-        frame += 1            
-        if frame >= fps // 6:
+        frame += 1
+        if frame >= fps:
             frame = 0
+
+        # Print games state
+        draw_text(screen, game_state.capitalize() , text_font, white, 0, 513)
+        # Print current frame
+        draw_text(screen, f"{frame:02d}", text_font, white, 0, 525)
 
         # Updating animation by flipping the screen
         pygame.display.flip()
@@ -118,173 +202,97 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            # Reset board
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                if PAUSED:
-                    for row in btns:
-                        for btn in row:
-                            btn.state = False
-                            btn.next_state = False
-                            btn.image.fill(color_stilldead)
-                else:
-                    pass
+            # Check keyboard input
+            elif event.type == pygame.KEYDOWN:
 
-            # Set grid
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i % 8 == 4 and j % 8 == 4:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                # Pause game
+                if event.key == pygame.K_ESCAPE:
+                    if game_state != "paused":
+                        game_state = "paused"
+                    else:
+                        game_state = "running"
 
-            # Set grid
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i % 8 == 4 or j % 8 == 4:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                # While paused
+                elif game_state == "paused":
 
-            # Set grid
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i % 4 == 2 and j % 4 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Reset Board 
+                    if event.key == pygame.K_SPACE:
+                        for row in btns:
+                            for btn in row:
+                                btn.set_states(False)
+                                btn.image.fill(color_stilldead)
 
-            # Set grid
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i % 4 == 2 or j % 4 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Set horizontal line
+                    elif event.key == pygame.K_1:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if j == board_height//2:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
-            # Set vertical line
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_5:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i == board_width//2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Set vertical line
+                    elif event.key == pygame.K_2:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if i == board_width//2:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
-            # Set horizontal line
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_6:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if j == board_heigth//2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Glider from top
+                    elif event.key == pygame.K_s:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if j == 0 and i % 6 == 3:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == 1 and i % 6 == 4:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == 2 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
-            # Set X
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_7:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if i - j == 0:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if i + j == board_heigth - 1:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Glider from top
+                    elif event.key == pygame.K_a:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if j == 0 and i % 6 == 3:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == 1 and i % 6 == 2:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == 2 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
-            # devel
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_x:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if j == 0 and i % 6 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == 1 and i % 6 == 3:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == 2 and (i % 6 == 1 or i % 6 == 2 or i % 6 == 3):
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
+                    # Glider from bottom
+                    elif event.key == pygame.K_x:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if j == board_height - 1 and i % 6 == 3:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == board_height - 2 and i % 6 == 4:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == board_height - 3 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
-            # devel
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_y:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if j == board_heigth - 1 and i % 6 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == board_heigth - 2 and i % 6 == 3:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == board_heigth - 3 and (i % 6 == 1 or i % 6 == 2 or i % 6 == 3):
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-            # devel
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if j == 0 and i % 6 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == 1 and i % 6 == 1:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == 2 and (i % 6 == 1 or i % 6 == 2 or i % 6 == 3):
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-
-            # devel
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-                if PAUSED:
-                    for i, row in enumerate(btns):
-                        for j, btn in enumerate(row):
-                            if j == board_heigth - 1 and i % 6 == 2:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == board_heigth - 2 and i % 6 == 1:
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-                            if j == board_heigth - 3 and (i % 6 == 1 or i % 6 == 2 or i % 6 == 3):
-                                btn.state = True
-                                btn.next_state = True
-                                btn.image.fill(color_alive)
-
-
-                            
-
-            # Pause the game
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                if PAUSED:
-                    PAUSED = False
-                    print("Game runs...")
-                else:
-                    PAUSED = True
-                    print("Game paused...")
+                    # Glider from bottom
+                    elif event.key == pygame.K_y:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if j == board_height - 1 and i % 6 == 3:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == board_height - 2 and i % 6 == 2:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+                                if j == board_height - 3 and (i % 6 == 2 or i % 6 == 3 or i % 6 == 4):
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
 
 if __name__ == "__main__":
     main()

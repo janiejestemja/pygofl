@@ -1,5 +1,6 @@
 import sys
 import pygame
+import time
 
 bmargin = 32
 screen_width = 1280 # 1024 # 1280
@@ -100,6 +101,8 @@ def draw_text(screen, text, font_size, text_col, x, y):
     screen.blit(img, (x, y))
 
 def main():
+    game_started = False
+
     pygame.init()
     # Init screen
     screen = pygame.display.set_mode((screen_width, screen_height))
@@ -122,7 +125,7 @@ def main():
 
     # Starting animation loop
     frame = 0
-    game_state = "paused" # "running"
+    game_state = "paused" # "running", "over"
     while True:
         # Navbar at the bottom
         pygame.draw.rect(screen, bg_nav, (0, screen_height - bmargin, screen_width, screen_height))
@@ -180,6 +183,28 @@ def main():
 
                         btn.draw(screen)
 
+            case "over":
+                score = 0
+                for row in btns:
+                    for btn in row:
+
+                        if btn.state == True:
+                            score += 1
+                        if btn.past_state == True:
+                            score += 1
+
+                        btn.draw(screen)
+
+
+                draw_text(screen, "Game Over" , 12, white, 200, screen_height - bmargin + 1)
+                draw_text(screen, "Press ESC to restart." , 12, white, 0, screen_height - bmargin//2 + 1)
+                draw_text(screen, f"Time: {end_time - start_time:.2f}" , 12, white, 300, screen_height - bmargin + 1)
+
+                if end_time - start_time < 3:
+                    draw_text(screen, f"No Score if game shorter than 3 seconds" , 12, white, 300, screen_height - bmargin//2 + 1)
+                else:
+                    draw_text(screen, f"Score: {score}" , 12, white, 300, screen_height - bmargin//2 + 1)
+
         # Keep track of time
         clock.tick(fps)
         frame += 1
@@ -205,9 +230,28 @@ def main():
                 # Pause game
                 if event.key == pygame.K_ESCAPE:
                     if game_state != "paused":
-                        game_state = "paused"
+
+                        if game_state == "over":
+                            print("Restarting...")
+                            pygame.quit()
+                            main()
+
+                        elif game_started:
+                            game_state = "over"
+                            end_time = time.time()
+
+                        else:
+                            game_state = "paused"
+                            
+                    elif game_state == "over":
+                        pass
+
                     else:
-                        game_state = "running"
+                        if game_started == False:
+                            start_time = time.time()
+                            game_started = True
+                        else:
+                            game_state = "running"
 
                 # While paused
                 elif game_state == "paused":

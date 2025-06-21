@@ -235,7 +235,7 @@ def main():
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 
-                    # Set Grid
+                    # Set loose grid (points)
                     elif event.key == pygame.K_3:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
@@ -243,12 +243,27 @@ def main():
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 
-
-                    # Set Grid
+                    # Set loose grid (lines)
                     elif event.key == pygame.K_4:
                         for i, row in enumerate(btns):
                             for j, btn in enumerate(row):
+                                if i % 8 == 3 or j % 8 == 3:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+
+                    # Set tight grid (points)
+                    elif event.key == pygame.K_5:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
                                 if i % 4 == 1 and j % 4 == 1:
+                                    btn.set_states(True)
+                                    btn.image.fill(color_stillalive)
+
+                    # Set tight grid (lines)
+                    elif event.key == pygame.K_6:
+                        for i, row in enumerate(btns):
+                            for j, btn in enumerate(row):
+                                if i % 4 == 1 or j % 4 == 1:
                                     btn.set_states(True)
                                     btn.image.fill(color_stillalive)
 

@@ -23,7 +23,7 @@ jobs:
         source .venv/bin/activate
         pip install -r requirements.txt
         python setup.py build
-        zip simple.zip build/*
+        zip -r simple.zip build/*
  
     - name: Release...
       uses: softprops/action-gh-release@v2

@@ -22,7 +22,7 @@ jobs:
         python -m venv .venv
         source .venv/bin/activate
         pip install -r requirements.txt
-        python setup.py
+        python setup.py build
         zip simple.zip build/*
  
     - name: Release...

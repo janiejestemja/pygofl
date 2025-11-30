@@ -77,16 +77,16 @@ def main():
 
                         # Check living
                         if btn.state:
-                            if alive_neighbors < 2:
+                            if alive_neighbors < 2:  # 2
                                 btn.next_state = False
-                            elif alive_neighbors > 3:
+                            elif alive_neighbors > 3:  # 3
                                 btn.next_state = False
                             else:
                                 btn.next_state = True
 
                         # Check dead
                         else:
-                            if alive_neighbors == 3:
+                            if alive_neighbors == 3:  # 3
                                 btn.next_state = True
 
                 # Setting old state to new one
@@ -141,22 +141,23 @@ def main():
         )
         # Bar at the right
         # Calculate therefore length of bar...
-        still_alive_count, alive_count, dead_count = 0, 0, 0
+        still_alive_count, alive_count, still_dead_count = 0, 0, 0
         for row in btns:
             for btn in row:
                 if btn.state and btn.past_state:
                     still_alive_count += 1
                 elif btn.state:
                     alive_count += 1
-                elif not btn.state:
-                    dead_count += 1
+                else:
+                    still_dead_count += 1
         alive_ratio = 1 - ((sum_all_btns - alive_count) / sum_all_btns)
         still_alive_ratio = 1 - ((sum_all_btns - still_alive_count) / sum_all_btns)
-        dead_ratio = 1 - ((sum_all_btns - dead_count) / sum_all_btns)
+        dead_ratio = 1 - ((sum_all_btns - still_dead_count) / sum_all_btns)
 
+        # Bar at the right
         pygame.draw.rect(
             screen,
-            config["colors"]["bg_grid"],
+            config["colors"]["bg_nav"],
             (
                 config["screen"]["wid"] - config["margins"]["rig"],
                 config["margins"]["top"],
@@ -169,15 +170,15 @@ def main():
             config["colors"]["stillalive"],
             (
                 config["screen"]["wid"] - config["margins"]["rig"],
-                (config["screen"]["hei"] / 2) - still_alive_ratio * (config["screen"]["hei"] // 2),
+                (config["screen"]["hei"] / 2) - still_alive_ratio * (config["screen"]["hei"] / 2),
                 config["screen"]["wid"],
-                still_alive_ratio * (config["screen"]["hei"] - config["margins"]["bot"] - config["margins"]["top"]),
+                2 * still_alive_ratio * (config["screen"]["hei"] / 2),
             )
         )
         # Bar at the left
         pygame.draw.rect(
             screen,
-            config["colors"]["bg_grid"],
+            config["colors"]["bg_nav"],
             (
                 0,
                 config["margins"]["top"],
@@ -190,9 +191,9 @@ def main():
             config["colors"]["alive"],
             (
                 0,
-                (config["screen"]["hei"] / 2) - alive_ratio * (config["screen"]["hei"] // 2),
+                (config["screen"]["hei"] / 2) - alive_ratio * (config["screen"]["hei"] / 2),
                 config["margins"]["lef"],
-                alive_ratio * (config["screen"]["hei"] - config["margins"]["bot"] - config["margins"]["top"]),
+                2 * alive_ratio * (config["screen"]["hei"] / 2),
             )
         )
 
@@ -200,7 +201,7 @@ def main():
         draw_text(
             screen,
             f"still: {still_alive_count:04d}",
-            26,
+            16,
             config["colors"]["stillalive"],
             0.4 * (config["screen"]["wid"]),
             config["screen"]["hei"] - config["margins"]["bot"] + 1,
@@ -208,23 +209,23 @@ def main():
         draw_text(
             screen,
             f"alive: {alive_count:04d}",
-            26,
+            16,
             config["colors"]["alive"],
             0.6 * (config["screen"]["wid"]),
             config["screen"]["hei"] - config["margins"]["bot"] + 1,
         )
         draw_text(
             screen,
-            f"dead: {dead_count:04d}",
-            26,
-            config["colors"]["dead"],
+            f"free: {still_dead_count:04d}",
+            16,
+            config["colors"]["bg_grid"],
             0.8 * (config["screen"]["wid"]),
             config["screen"]["hei"] - config["margins"]["bot"] + 1,
         )
         draw_text(
             screen,
-            # f"total: {alive_count + still_alive_count + dead_count:04d}",
-            f"total: {len(btns) * len(btns[0]):04d}",
+            f"total: {alive_count + still_alive_count + still_dead_count:04d}",
+            # f"total: {len(btns) * len(btns[0]):04d}",
             14,
             config["colors"]["white"],
             0.9 * config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"],
@@ -287,8 +288,22 @@ def main():
                                         btn.set_states(True)
                                         btn.image.fill(config["colors"]["stillalive"])
 
-                        # Glider from top
+                        # Diagonals
                         case pygame.K_3:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if j - i == 0:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                        case pygame.K_4:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if i + 1 == len(row) - j:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+
+                        # Glider from top
+                        case pygame.K_q:
                             for i, row in enumerate(btns):
                                 for j, btn in enumerate(row):
                                     if j == 0 and i % 6 == 4:
@@ -300,7 +315,7 @@ def main():
                                     if j == 2 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
                                         btn.set_states(True)
                                         btn.image.fill(config["colors"]["stillalive"])
-                        case pygame.K_4:
+                        case pygame.K_w:
                             for i, row in enumerate(btns):
                                 for j, btn in enumerate(row):
                                     if j == 0 and i % 6 == 4:
@@ -314,7 +329,7 @@ def main():
                                         btn.image.fill(config["colors"]["stillalive"])
 
                         # Glider from bottom
-                        case pygame.K_5:
+                        case pygame.K_e:
                             for i, row in enumerate(btns):
                                 for j, btn in enumerate(row):
                                     if j == config["board"]["hei"] - 1 and i % 6 == 4:
@@ -326,7 +341,7 @@ def main():
                                     if j == config["board"]["hei"] - 3 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
                                         btn.set_states(True)
                                         btn.image.fill(config["colors"]["stillalive"])
-                        case pygame.K_6:
+                        case pygame.K_r:
                             for i, row in enumerate(btns):
                                 for j, btn in enumerate(row):
                                     if j == config["board"]["hei"] - 1 and i % 6 == 4:
@@ -336,6 +351,56 @@ def main():
                                         btn.set_states(True)
                                         btn.image.fill(config["colors"]["stillalive"])
                                     if j == config["board"]["hei"] - 3 and (i % 6 == 3 or i % 6 == 4 or i % 6 == 5):
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                        # Glider from left
+                        case pygame.K_s:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if i == 0 and j % 6 == 4:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == 1 and j % 6 == 3:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == 2 and (j % 6 == 3 or j % 6 == 4 or j % 6 == 5):
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                        case pygame.K_a:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if i == 0 and j % 6 == 4:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == 1 and j % 6 == 5:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == 2 and (j % 6 == 3 or j % 6 == 4 or j % 6 == 5):
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                        # Glider from right
+                        case pygame.K_d:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if i == config["board"]["wid"] - 1 and j % 6 == 4:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == config["board"]["wid"] - 2 and j % 6 == 3:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == config["board"]["wid"] - 3 and (j % 6 == 3 or j % 6 == 4 or j % 6 == 5):
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                        case pygame.K_f:
+                            for i, row in enumerate(btns):
+                                for j, btn in enumerate(row):
+                                    if i == config["board"]["wid"] - 1 and j % 6 == 4:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == config["board"]["wid"] - 2 and j % 6 == 5:
+                                        btn.set_states(True)
+                                        btn.image.fill(config["colors"]["stillalive"])
+                                    if i == config["board"]["wid"] - 3 and (j % 6 == 3 or j % 6 == 4 or j % 6 == 5):
                                         btn.set_states(True)
                                         btn.image.fill(config["colors"]["stillalive"])
 

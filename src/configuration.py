@@ -1,7 +1,7 @@
 class Config:
     margins = {
         "top": 16,
-        "bot": 32,
+        "bot": 24,
         "lef": 8,
         "rig": 8,
         "cell_bot": 1,
@@ -13,9 +13,9 @@ class Config:
 
     # 80-1 * 160-1 = 12_561
     board = {
-        "hei": 7,
-        "wid": 11,
-        "scale": (20, 10),
+        "hei": 14, # 14
+        "wid": 14, # 26
+        "scale": (23, 11),
     }
 
     # 8 * 80 = 640 and 8 * 160 = 1280
@@ -28,8 +28,23 @@ class Config:
         "black": (0, 0, 0),
         "white": (255, 255, 255),
 
+        "alive": (42, 42, 42),
+        "stillalive": (10, 10, 220),
+
+        "dead": (20, 20, 20),
+        "stilldead": (0, 0, 0),
+
+        "bg_grid": (20, 20, 20),
+        "bg_nav": (10, 10, 10),
+    }
+    alt_colors = {
+        "black": (0, 0, 0),
+        "white": (255, 255, 255),
+
         "alive": (10, 10, 220),
         "stillalive": (40, 160, 80),
+        # "alive": (10, 160, 220),
+        # "stillalive": (140, 10, 80),
 
         "dead": (20, 20, 20),
         "stilldead": (0, 0, 0),

@@ -10,7 +10,10 @@ def draw_text(screen, text, font_size, text_col, x, y):
 
 
 def main():
-    config = Config.make_config()
+    if len(sys.argv) == 2 and sys.argv[1] == "scale":
+        config = Config.make_config(True)
+    else:
+        config = Config.make_config()
     pygame.init()
     # Init screen
     screen = pygame.display.set_mode(
@@ -48,7 +51,7 @@ def main():
 
     # Starting animation loop
     frame = 0
-    game_state = "paused"  # "running"
+    game_state = "paused"  # "continue"
     while True:
         match game_state:
             case "paused":
@@ -61,7 +64,7 @@ def main():
                             else:
                                 btn.set_states(True)
                                 btn.image.fill(config["colors"]["stillalive"])
-            case "running":
+            case "continue":
                 for i, row in enumerate(btns):
                     for j, btn in enumerate(row):
                         # Get alive neighbors
@@ -138,18 +141,18 @@ def main():
         )
         # Bar at the right
         # Calculate therefore length of bar...
-        still_alive_count = 0
-        alive_count = 0
+        still_alive_count, alive_count, dead_count = 0, 0, 0
         for row in btns:
             for btn in row:
-                if btn.past_state:
+                if btn.state and btn.past_state:
                     still_alive_count += 1
-                if btn.state:
+                elif btn.state:
                     alive_count += 1
-        alive_ratio_real = 1 - ((sum_all_btns - alive_count) / sum_all_btns)
-        alive_ratio = alive_ratio_real * 3
-        still_alive_ratio_real = 1 - ((sum_all_btns - still_alive_count) / sum_all_btns)
-        still_alive_ratio = still_alive_ratio_real * 3
+                elif not btn.state:
+                    dead_count += 1
+        alive_ratio = 1 - ((sum_all_btns - alive_count) / sum_all_btns)
+        still_alive_ratio = 1 - ((sum_all_btns - still_alive_count) / sum_all_btns)
+        dead_ratio = 1 - ((sum_all_btns - dead_count) / sum_all_btns)
 
         pygame.draw.rect(
             screen,
@@ -193,39 +196,48 @@ def main():
             )
         )
 
+        # Print Counts
+        draw_text(
+            screen,
+            f"still: {still_alive_count:04d}",
+            26,
+            config["colors"]["stillalive"],
+            0.4 * (config["screen"]["wid"]),
+            config["screen"]["hei"] - config["margins"]["bot"] + 1,
+        )
+        draw_text(
+            screen,
+            f"alive: {alive_count:04d}",
+            26,
+            config["colors"]["alive"],
+            0.6 * (config["screen"]["wid"]),
+            config["screen"]["hei"] - config["margins"]["bot"] + 1,
+        )
+        draw_text(
+            screen,
+            f"dead: {dead_count:04d}",
+            26,
+            config["colors"]["dead"],
+            0.8 * (config["screen"]["wid"]),
+            config["screen"]["hei"] - config["margins"]["bot"] + 1,
+        )
+        draw_text(
+            screen,
+            # f"total: {alive_count + still_alive_count + dead_count:04d}",
+            f"total: {len(btns) * len(btns[0]):04d}",
+            14,
+            config["colors"]["white"],
+            0.9 * config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"],
+            1,
+        )
         # Print games state
         draw_text(
             screen,
             game_state.capitalize(),
-            28,
+            14,
             config["colors"]["white"],
-            0.5 * (config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"]),
-            config["screen"]["hei"] - config["margins"]["bot"] + 1
-        )
-        # Print color legend
-        draw_text(
-            screen,
-            "still alive",
-            28,
-            config["colors"]["stillalive"],
-            0.85 * (config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"]),
-            config["screen"]["hei"] - config["margins"]["bot"] + 1
-        )
-        draw_text(
-            screen,
-            "dead",
-            28,
-            config["colors"]["dead"],
-            0.75 * (config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"]),
-            config["screen"]["hei"] - config["margins"]["bot"] + 1
-        )
-        draw_text(
-            screen,
-            "alive",
-            28,
-            config["colors"]["alive"],
-            0.65 * (config["screen"]["wid"] - config["margins"]["lef"] - config["margins"]["rig"]),
-            config["screen"]["hei"] - config["margins"]["bot"] + 1
+            0,
+            1,
         )
 
         # Updating animation by flipping the screen
@@ -246,7 +258,7 @@ def main():
                     if game_state != "paused":
                         game_state = "paused"
                     else:
-                        game_state = "running"
+                        game_state = "continue"
 
                 # While paused
                 elif game_state == "paused":

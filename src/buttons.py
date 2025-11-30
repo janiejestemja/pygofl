@@ -50,6 +50,7 @@ class CellBtn(Btn):
 
     @staticmethod
     def get_alive_neighbors(indices, btns, board_width, board_height):
+        left_right, top_down = True, True
         x, y = indices
         x_range = [i for i in range(x - 1, x + 2)]
         y_range = [j for j in range(y - 1, y + 2)]
@@ -60,13 +61,30 @@ class CellBtn(Btn):
         living = []
         for flower in neighbors:
             i, j = flower
+            new_i, new_j = i, j
 
-            if i < 0 or i >= board_width:
-                continue
-            if j < 0 or j >= board_height:
-                continue
+            if i < 0:
+                if left_right:
+                    new_i = board_width - 1
+                else:
+                    continue
+            elif i >= board_width:
+                if left_right:
+                    new_i = 0
+                else:
+                    continue
+            if j < 0:
+                if top_down:
+                    new_j = board_height - 1
+                else:
+                    continue
+            elif j >= board_height:
+                if top_down:
+                    new_j = 0
+                else:
+                    continue
 
-            living.append(btns[i][j].state)
+            living.append(btns[new_i][new_j].state)
 
         return sum(living)
 

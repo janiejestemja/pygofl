@@ -9,7 +9,7 @@ def main():
     parser.add_argument("--random", type=bool, help="alternative chances")
     parser.add_argument("--scale", type=bool, help="alternative scale")
     parser.add_argument("--walls", choices=["yes", "no"], help="enable walls")
-    parser.add_argument("--alt_color", type=bool, help="alternative colorscheme")
+    parser.add_argument("--alt_color", type=int, choices=range(len(Config.colors)), help="alternative colorscheme")
     parser.add_argument("--alt_rules", type=bool, help="alternative ruleset")
     args = parser.parse_args()
 

@@ -24,20 +24,8 @@ class Config:
         "wid": 64,
     }
 
-    colors = {
-        "black": (0, 0, 0),
-        "white": (255, 255, 255),
-
-        "alive": (42, 42, 42),
-        "stillalive": (10, 10, 220),
-
-        "dead": (20, 20, 20),
-        "stilldead": (0, 0, 0),
-
-        "bg_grid": (20, 20, 20),
-        "bg_nav": (10, 10, 10),
-    }
-    alt_colors = {
+    colors = [{
+        # default_colors
         "black": (0, 0, 0),
         "white": (255, 255, 255),
 
@@ -49,7 +37,46 @@ class Config:
 
         "bg_grid": (20, 20, 20),
         "bg_nav": (10, 10, 10),
-    }
+    }, {
+        # alt_colors
+        "black": (0, 0, 0),
+        "white": (255, 255, 255),
+
+        "alive": (42, 42, 42),
+        "stillalive": (10, 10, 220),
+
+        "dead": (20, 20, 20),
+        "stilldead": (0, 0, 0),
+
+        "bg_grid": (20, 20, 20),
+        "bg_nav": (10, 10, 10),
+    }, {
+        # flower_colors
+        "black": (0, 0, 0),
+        "white": (255, 255, 255),
+
+        "alive": (10, 10, 190),
+        "stillalive": (10, 150, 60),
+
+        "dead": (20, 20, 20),
+        "stilldead": (0, 0, 0),
+
+        "bg_grid": (20, 20, 20),
+        "bg_nav": (10, 10, 10),
+    }, {
+        # water_colors
+        "black": (0, 0, 0),
+        "white": (255, 255, 255),
+
+        "alive": (10, 60, 120),
+        "stillalive": (10, 10, 220),
+
+        "dead": (20, 20, 20),
+        "stilldead": (0, 0, 0),
+
+        "bg_grid": (20, 20, 20),
+        "bg_nav": (10, 10, 10),
+    }]
 
     @classmethod
     def make_config(cls, scale=None, alt_color=None):
@@ -59,10 +86,10 @@ class Config:
             "cell_size": cls.cell_size,
             "board": cls.board,
             "screen": cls.screen,
-            "colors": cls.colors,
+            "colors": cls.colors[0],
         }
         if alt_color:
-            config["colors"] = cls.alt_colors
+            config["colors"] = cls.colors[alt_color]
 
         # selfscale board and screen
         if scale:

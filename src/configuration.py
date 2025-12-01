@@ -42,9 +42,7 @@ class Config:
         "white": (255, 255, 255),
 
         "alive": (10, 10, 220),
-        "stillalive": (40, 160, 80),
-        # "alive": (10, 160, 220),
-        # "stillalive": (140, 10, 80),
+        "stillalive": (10, 10, 220),
 
         "dead": (20, 20, 20),
         "stilldead": (0, 0, 0),
@@ -54,7 +52,7 @@ class Config:
     }
 
     @classmethod
-    def make_config(cls, scale=False):
+    def make_config(cls, scale=None, alt_color=None):
         # initialise
         config = {
             "margins": cls.margins,
@@ -63,6 +61,8 @@ class Config:
             "screen": cls.screen,
             "colors": cls.colors,
         }
+        if alt_color:
+            config["colors"] = cls.alt_colors
 
         # selfscale board and screen
         if scale:

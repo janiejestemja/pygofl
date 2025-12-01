@@ -49,8 +49,8 @@ class CellBtn(Btn):
         self.next_state = new_state
 
     @staticmethod
-    def get_alive_neighbors(indices, btns, board_width, board_height):
-        left_right, top_down = True, True
+    def get_alive_neighbors(indices, btns, board_width, board_height, walls):
+        left_right, top_down = walls
         x, y = indices
         x_range = [i for i in range(x - 1, x + 2)]
         y_range = [j for j in range(y - 1, y + 2)]

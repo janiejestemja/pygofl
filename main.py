@@ -1,19 +1,27 @@
-import sys
-import pygame
-from src import CellBtn, Config
-
-
 def draw_text(screen, text, font_size, text_col, x, y):
     font = pygame.font.SysFont("Helvetica", font_size)
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
-
 def main():
-    if len(sys.argv) == 2 and sys.argv[1] == "scale":
-        config = Config.make_config(True)
-    else:
-        config = Config.make_config()
+    # Definition of CLI
+    parser = argparse.ArgumentParser(description="Naive game of life.")
+    parser.add_argument("--random", type=bool, help="alternative chances")
+    parser.add_argument("--scale", type=bool, help="alternative scale")
+    parser.add_argument("--walls", choices=["yes", "no"], help="enable walls")
+    parser.add_argument("--alt_color", type=bool, help="alternative colorscheme")
+    parser.add_argument("--alt_rules", type=bool, help="alternative ruleset")
+    args = parser.parse_args()
+
+    walls = (True, False)
+    match args.walls:
+        case "yes":
+            walls = (False, False)
+        case "no":
+            walls = (True, True)
+
+    config = Config.make_config(scale=args.scale, alt_color=args.alt_color)
+
     pygame.init()
     # Init screen
     screen = pygame.display.set_mode(
@@ -72,22 +80,42 @@ def main():
                             (i, j),
                             btns,
                             config["board"]["wid"],
-                            config["board"]["hei"]
+                            config["board"]["hei"],
+                            walls,
                         )
 
                         # Check living
-                        if btn.state:
-                            if alive_neighbors < 2:  # 2
+                        if btn.state and args.alt_rules:
+                            if alive_neighbors < 2:
                                 btn.next_state = False
-                            elif alive_neighbors > 3:  # 3
+                            elif alive_neighbors > 4:
                                 btn.next_state = False
-                            else:
-                                btn.next_state = True
-
+                        elif btn.state:
+                            # Default: 2
+                            if alive_neighbors < 2:
+                                btn.next_state = False
+                            # Default: 3
+                            elif alive_neighbors > 3:
+                                btn.next_state = False
                         # Check dead
                         else:
-                            if alive_neighbors == 3:  # 3
+                            # Default: 3
+                            if args.alt_rules:
+                                if alive_neighbors in [2, 3]:  # 3
+                                    btn.next_state = True
+                                if alive_neighbors == 3:
+                                    btn.next_state = False
+
+                            elif alive_neighbors == 3:  # 3
                                 btn.next_state = True
+                            # Random chance for awakening
+                            elif args.random and alive_neighbors > 0:
+                                if randint(-10_000, 10_000) == 0:
+                                    btn.next_state = True
+                        # Random chance for dying
+                        if args.random and btn.next_state and alive_neighbors != 3:
+                            if randint(-10_000, 10_000) == 0:
+                                btn.next_state = False
 
                 # Setting old state to new one
                 for row in btns:
@@ -405,6 +433,10 @@ def main():
                                         btn.image.fill(config["colors"]["stillalive"])
 
 
-
 if __name__ == "__main__":
+    import sys
+    import argparse
+    import pygame
+    from src import CellBtn, Config
+    from random import randint
     main()

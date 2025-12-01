@@ -4,15 +4,6 @@ def draw_text(screen, text, font_size, text_col, x, y):
     screen.blit(img, (x, y))
 
 def main():
-    # Definition of CLI
-    parser = argparse.ArgumentParser(description="Naive game of life.")
-    parser.add_argument("--random", type=bool, help="alternative chances")
-    parser.add_argument("--scale", type=bool, help="alternative scale")
-    parser.add_argument("--walls", choices=["yes", "no"], help="enable walls")
-    parser.add_argument("--alt_color", type=int, choices=range(len(Config.colors)), help="alternative colorscheme")
-    parser.add_argument("--alt_rules", type=bool, help="alternative ruleset")
-    args = parser.parse_args()
-
     walls = (True, False)
     match args.walls:
         case "yes":
@@ -434,9 +425,18 @@ def main():
 
 
 if __name__ == "__main__":
-    import sys
     import argparse
-    import pygame
     from src import CellBtn, Config
+    # Definition of CLI
+    parser = argparse.ArgumentParser(description="Naive game of life.")
+    parser.add_argument("--random", type=bool, help="alternative chances")
+    parser.add_argument("--scale", type=bool, help="alternative scale")
+    parser.add_argument("--walls", choices=["yes", "no"], help="enable walls")
+    parser.add_argument("--alt_color", type=int, choices=range(len(Config.colors)), help="alternative colorscheme")
+    parser.add_argument("--alt_rules", type=bool, help="alternative ruleset")
+    args = parser.parse_args()
+
+    import sys
+    import pygame
     from random import randint
     main()
